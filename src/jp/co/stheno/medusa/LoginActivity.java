@@ -1,15 +1,24 @@
 package jp.co.stheno.medusa;
 
 import android.os.Bundle;
+import android.R.string;
 import android.app.Activity;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
+import android.widget.EditText;
 
-public class MainActivity extends Activity {
+public class LoginActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_login);
+		
+		TelephonyManager manager = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+		String imei = manager.getDeviceId();
+		EditText eText = (EditText)findViewById(R.id.nicname);
+		eText.setHint(imei);
+		
 	}
 
 	@Override
