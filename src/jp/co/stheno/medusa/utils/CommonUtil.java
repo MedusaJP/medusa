@@ -4,6 +4,8 @@
 package jp.co.stheno.medusa.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.telephony.TelephonyManager;
 
 /**
@@ -12,6 +14,8 @@ import android.telephony.TelephonyManager;
  *
  */
 public class CommonUtil {
+
+	
 	/**
 	 * 携帯のIMEIコード取得する
 	 * @param application Context

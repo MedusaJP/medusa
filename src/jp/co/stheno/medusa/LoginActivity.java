@@ -4,10 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import jp.co.stheno.medusa.utils.APIHandler;
-import jp.co.stheno.medusa.utils.APIHandler.Response;
-import jp.co.stheno.medusa.utils.AlertDialogManager;
 import jp.co.stheno.medusa.utils.CommonUtil;
-import jp.co.stheno.medusa.utils.ConnectionDetector;
 import jp.co.stheno.medusa.utils.Const;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -19,7 +16,6 @@ import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
@@ -38,7 +34,10 @@ public class LoginActivity extends CommonActivity {
 	/** ログ出力用TAG */
 	private static String TAG = LoginActivity.class.getSimpleName();
 
-	// Login button
+	/** UI */
+	// 快速登録
+	Button btnQuickSignIn;
+	// Twitter Login button
     Button btnLoginTwitter;
     // Update status button
     Button btnUpdateStatus;
@@ -46,49 +45,34 @@ public class LoginActivity extends CommonActivity {
     Button btnLogoutTwitter;
     // EditText for update
     EditText txtUpdate;
+    // nicname
+    EditText txtNicname;
     // lbl update
     TextView lblUpdate;
     TextView lblUserName;
-    
     private Handler mHandler;
-    
-    private AccessToken accessToken;
+
  
     // Progress dialog
     ProgressDialog pDialog;
-    
-    private User user;
  
     // Twitter
     private Twitter twitter;
     private RequestToken requestToken;
-     
-    // Shared Preferences
-    private static SharedPreferences mSharedPreferences;
-     
-    // Internet Connection detector
-    private ConnectionDetector cd;
+    private User user;
+    private AccessToken accessToken;
     
+    // api results
     private JSONObject resultJsonObject;
-    
-    // Alert Dialog Manager
-    AlertDialogManager alert = new AlertDialogManager();
+    private String user_id;
+    private boolean isLoggedIn = false;
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-		
-		cd = new ConnectionDetector(getApplicationContext());
-		
-		// Check if Internet present
-		if (!cd.isConnectingToInternet()) {
-			// Internet Connection is not present
-			alert.showAlertDialog(LoginActivity.this, "Internet Connection Error", "Please connect to working Internet connection", false);
-			// stop executing code by return
-			return;
-		}
 		
 		// ALL UI elements
 		btnLoginTwitter = (Button)findViewById(R.id.btnLoginTwitter);
@@ -97,11 +81,11 @@ public class LoginActivity extends CommonActivity {
 		txtUpdate = (EditText)findViewById(R.id.txtUpdateStatus);
 		lblUpdate = (TextView)findViewById(R.id.lblUpdate);
 		lblUserName = (TextView)findViewById(R.id.lblUserName);
+		txtNicname = (EditText)findViewById(R.id.txtNicname);
+		btnQuickSignIn = (Button)findViewById(R.id.btnQuickSignIn);
 		
+		// post UI elements handler
 		mHandler = new Handler();
-		
-		// Shared Preferences
-		mSharedPreferences = getApplicationContext().getSharedPreferences("LoginUser", 0);
 		
 		btnLoginTwitter.setOnClickListener(new View.OnClickListener() {
 			
@@ -112,10 +96,43 @@ public class LoginActivity extends CommonActivity {
 			}
 		});
 		
-		EditText eText = (EditText)findViewById(R.id.nicname);
-		eText.setHint(CommonUtil.getIMEIString(getApplicationContext()));
+		btnQuickSignIn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				quickSinin(CommonUtil.getIMEIString(getApplicationContext()));
+			}
+		});
 		
-		quickSinin(CommonUtil.getIMEIString(getApplicationContext()));
+		// インタネット接続状態をチェック
+		if (!checkInternetStatus(LoginActivity.this)) {
+			Log.e(TAG, "インターネットに接続されていません");
+			return;
+		}
+		
+		// ユーザーログイン状態をチェック
+		if (getLoginStatus(getApplicationContext())) {
+			user_id = getsharedPreferences().getString(Const.USER_ID, "-1");
+			if (user_id != "-1") {
+				isLoggedIn = true;
+			}
+		}
+		
+		// ユーザー未ログインの場合
+		if (!isLoggedIn) {
+			lblUserName.setVisibility(View.GONE);
+		}
+		else {
+			lblUserName.setText(Html.fromHtml("<b>Welcome " + user_id + "</b>"));
+			btnLoginTwitter.setVisibility(View.GONE);
+			btnQuickSignIn.setVisibility(View.GONE);
+			txtNicname.setVisibility(View.GONE);
+			lblUserName.setVisibility(View.VISIBLE);
+		}
+
+		//eText.setHint(CommonUtil.getIMEIString(getApplicationContext()));
+		
+		//quickSinin(CommonUtil.getIMEIString(getApplicationContext()));
 		
 	}
 	
@@ -143,6 +160,13 @@ public class LoginActivity extends CommonActivity {
 							try {
 								id = resultJsonObject.getString("user_id");
 								lblUserName.setText(Html.fromHtml("<b>Welcome " + id + "</b>"));
+								lblUserName.setVisibility(View.VISIBLE);
+								btnLoginTwitter.setVisibility(View.GONE);
+								btnQuickSignIn.setVisibility(View.GONE);
+								txtNicname.setVisibility(View.GONE);
+								
+								setLoginStatus(getApplicationContext(), true);
+								setUserId(getApplicationContext(), id);
 							} catch (JSONException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -178,7 +202,7 @@ public class LoginActivity extends CommonActivity {
 								@Override
 								public void run() {
 									// Shared Preferences
-									Editor editor = mSharedPreferences.edit();
+									Editor editor = getsharedPreferences().edit();
 									
 									// After getting access token, access token secret
 									// store them in application preferences
@@ -220,7 +244,7 @@ public class LoginActivity extends CommonActivity {
 
 	private boolean isTwitterLoggedInAlready() {
 		// return twitter login status from Shared Preferences
-        return mSharedPreferences.getBoolean(Const.PREF_KEY_TWITTER_LOGIN, false);
+        return getsharedPreferences().getBoolean(Const.PREF_KEY_TWITTER_LOGIN, false);
 	}
 
 	private void loginToTwitter() {

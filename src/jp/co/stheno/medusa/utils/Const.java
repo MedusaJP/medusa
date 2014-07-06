@@ -1,5 +1,7 @@
 package jp.co.stheno.medusa.utils;
 
+import android.R.integer;
+
 public class Const {
 	public static final String API_ID = "demo";
 	public static final String DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36";
@@ -17,9 +19,17 @@ public class Const {
     public static final String PREF_KEY_OAUTH_TOKEN = "oauth_token";
     public static final String PREF_KEY_OAUTH_SECRET = "oauth_token_secret";
     public static final String PREF_KEY_TWITTER_LOGIN = "isTwitterLogedIn";
+    public static final String LOGIN_USER = "login_user";
+    public static final String AUTO_LOGIN_STATUS = "auto_login_status";
+    public static final String USER_ID = "user_id";
+    
+    // flags
+    public static final int LOGGEDIN = 1;
+    public static final int NOT_LOGGEDIN = 0;
     
     // Twitter oauth urls
     public static final String URL_TWITTER_AUTH = "auth_url";
     public static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
     public static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
+    
 }
