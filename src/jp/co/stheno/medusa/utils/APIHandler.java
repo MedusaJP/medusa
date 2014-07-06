@@ -118,6 +118,13 @@ public class APIHandler {
         return APIID;
     }
     
+    public Response postIMEI (String imei) {
+    	String path = API_BASE_URL + "/index.php/user/quick_apply";
+    	ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
+    	params.add(new BasicNameValuePair("device_id", imei));
+    	return postAPI(path, params);
+    }
+    
     /**
      * 必須パラメータくっつけてAPIコール
      * @param path
@@ -330,7 +337,7 @@ public class APIHandler {
         }
 
         public boolean isSuccess() {
-            if(mStatus.equals("1")) {
+            if(mStatus.equals("200")) {
                 return true;
             }
             else {
