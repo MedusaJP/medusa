@@ -100,7 +100,7 @@ public class LoginActivity extends CommonActivity {
 			
 			@Override
 			public void onClick(View v) {
-				quickSinin(CommonUtil.getIMEIString(getApplicationContext()));
+				quickSinin(CommonUtil.getIMEIString(getApplicationContext()), txtNicname.getText().toString());
 			}
 		});
 		
@@ -142,13 +142,14 @@ public class LoginActivity extends CommonActivity {
 	  initTwitter(intent);
 	}
 	
-	private void quickSinin(String imei) {
+	private void quickSinin(String imei, String userName) {
 		final String iMEI = imei;
+		final String userNameString = userName;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				APIHandler apiHandler = new APIHandler();
-				final APIHandler.Response response = apiHandler.postIMEI(iMEI);
+				final APIHandler.Response response = apiHandler.postIMEI(iMEI, userNameString);
 				
 				if (response.isSuccess()) {
 					resultJsonObject = (JSONObject)response.getData();
@@ -158,7 +159,7 @@ public class LoginActivity extends CommonActivity {
 						public void run() {
 							String id;
 							try {
-								id = resultJsonObject.getString("user_id");
+								id = resultJsonObject.getString("id");
 								lblUserName.setText(Html.fromHtml("<b>Welcome " + id + "</b>"));
 								lblUserName.setVisibility(View.VISIBLE);
 								btnLoginTwitter.setVisibility(View.GONE);

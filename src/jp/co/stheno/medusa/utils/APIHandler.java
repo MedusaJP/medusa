@@ -118,10 +118,11 @@ public class APIHandler {
         return APIID;
     }
     
-    public Response postIMEI (String imei) {
+    public Response postIMEI (String imei, String userName) {
     	String path = API_BASE_URL + "/index.php/user/quick_apply";
     	ArrayList<NameValuePair> params = new ArrayList<NameValuePair>();
     	params.add(new BasicNameValuePair("device_id", imei));
+    	params.add(new BasicNameValuePair("user_name", userName));
     	return postAPI(path, params);
     }
     
